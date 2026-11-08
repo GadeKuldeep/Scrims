@@ -1,0 +1,24 @@
+{
+  "name": "scrims-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SCRIMS — Full-Stack Esports Tournament Management Platform",
+  "scripts": {
+    "start:backend": "npm --prefix backend start",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "test:backend": "npm --prefix backend test",
+    "test": "npm --prefix backend test"
+  },
+  "keywords": [
+    "esports",
+    "scrims",
+    "bgmi",
+    "freefire",
+    "clash-of-clans",
+    "tournament-management"
+  ],
+  "author": "SCRIMS Architectural Core",
+  "license": "ISC"
+}
