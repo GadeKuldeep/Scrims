@@ -14,7 +14,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [profileDrawerOpen, setProfileDrawerOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -247,28 +247,79 @@ export default function Navbar() {
           {isAuthenticated ? (
             <div className="relative">
               <button
-                onClick={() => setProfileDrawerOpen(true)}
-                className="flex items-center gap-space-sm pl-space-xs pr-space-sm py-1 rounded-full bg-surface-container-low border border-outline-variant/40 hover:border-primary/60 transition-all cursor-pointer group"
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center gap-space-sm pl-space-xs pr-space-sm py-1 rounded-full bg-surface-container-low border border-outline-variant/40 hover:border-outline-variant/80 transition-all cursor-pointer"
                 type="button"
-                title="Open Profile Drawer"
               >
                 <img
                   alt="Profile"
-                  className="w-8 h-8 rounded-full object-cover ring-1 ring-primary/40 group-hover:ring-primary transition-all"
+                  className="w-8 h-8 rounded-full object-cover ring-1 ring-primary/40"
                   src={user.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
                 />
                 <div className="hidden sm:flex flex-col text-left">
-                  <span className="font-label-numeric text-label-numeric text-on-surface leading-tight font-semibold group-hover:text-primary transition-colors">
+                  <span className="font-label-numeric text-label-numeric text-on-surface leading-tight font-semibold">
                     {user.username}
                   </span>
                   <span className="font-label-caption text-label-caption text-primary leading-none uppercase">
                     {user.role.replace('_', ' ')}
                   </span>
                 </div>
-                <span className="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:text-primary transition-colors">
-                  menu_open
-                </span>
+                <span className="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span>
               </button>
+
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-60 rounded-xl bg-surface-container border border-outline-variant/40 shadow-2xl p-2 z-50 flex flex-col gap-1">
+                  <div className="px-3 py-2 border-b border-outline-variant/20 mb-1">
+                    <span className="font-headline-sm text-body-sm text-on-surface font-bold block truncate">{user.full_name}</span>
+                    <span className="text-body-sm text-on-surface-variant truncate block">{user.email}</span>
+                    <span className="text-primary text-[10px] font-label-badge uppercase block mt-1">
+                      Role: {user.role} {user.staff_code ? `(${user.staff_code})` : ''}
+                    </span>
+                    {user.mobile_number ? (
+                      <span className="text-emerald-400 text-[11px] font-mono block mt-0.5">
+                        📱 {user.mobile_number}
+                      </span>
+                    ) : (
+                      <span className="text-amber-400 text-[10px] block mt-0.5">
+                        ⚠️ No Mobile Added
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Profile Tab */}
+                  <Link
+                    to="/profile"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-container-high text-body-sm text-on-surface transition-colors font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-primary">person</span>
+                    <span>Go to Profile</span>
+                  </Link>
+
+                  {/* Dashboard Tab */}
+                  <Link
+                    to={getDashboardPath()}
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-container-high text-body-sm text-on-surface transition-colors font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-primary">dashboard</span>
+                    <span>My Dashboard Desk</span>
+                  </Link>
+
+                  {/* Sign Out Tab */}
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      logout();
+                      navigate('/login');
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-error-container/30 text-body-sm text-error transition-colors w-full text-left font-medium cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <Link
@@ -330,10 +381,10 @@ export default function Navbar() {
               <Link
                 to="/profile"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-primary font-headline-sm text-headline-sm uppercase flex items-center justify-between"
+                className="px-3 py-2 rounded-lg hover:bg-surface-container text-primary font-headline-sm text-headline-sm uppercase flex items-center justify-between"
               >
-                <span>My Profile & Mobile</span>
-                <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
+                <span>Go to Profile</span>
+                <span className="material-symbols-outlined text-[18px]">person</span>
               </Link>
               <Link
                 to={getDashboardPath()}
@@ -344,153 +395,6 @@ export default function Navbar() {
               </Link>
             </>
           )}
-        </div>
-      )}
-
-      {/* Slide-Over Profile Drawer */}
-      {isAuthenticated && profileDrawerOpen && (
-        <div className="fixed inset-0 z-[100] overflow-hidden">
-          {/* Backdrop */}
-          <div
-            onClick={() => setProfileDrawerOpen(false)}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-            aria-hidden="true"
-          />
-
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-sm sm:max-w-md bg-surface-container border-l border-outline-variant/40 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
-              <div>
-                {/* Drawer Top Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-xl">account_circle</span>
-                    <span className="font-headline-sm text-sm uppercase tracking-wider font-bold text-on-surface">
-                      Account & Profile
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setProfileDrawerOpen(false)}
-                    className="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
-                    aria-label="Close Profile Drawer"
-                  >
-                    <span className="material-symbols-outlined text-xl">close</span>
-                  </button>
-                </div>
-
-                {/* User Identity Card */}
-                <div className="mt-5 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 flex items-start gap-3.5">
-                  <img
-                    src={user.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
-                    alt={user.full_name || user.username}
-                    className="w-14 h-14 rounded-xl object-cover ring-2 ring-primary/40 shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-headline-sm text-base font-bold text-on-surface truncate">
-                      {user.full_name || user.username}
-                    </h3>
-                    <p className="text-xs text-on-surface-variant truncate font-medium">
-                      {user.email}
-                    </p>
-                    <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-                      <span className="px-2 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-bold uppercase tracking-wider border border-primary/30">
-                        {user.role.replace('_', ' ')}
-                      </span>
-                      {user.in_game_id && (
-                        <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant text-[10px] font-mono">
-                          IGN: {user.in_game_id}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mobile / WhatsApp Status Banner */}
-                <div className="mt-4 p-4 rounded-xl bg-surface-container-high/60 border border-outline-variant/30 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-emerald-400 text-sm">phone_iphone</span>
-                      WhatsApp / Mobile
-                    </span>
-                    {user.mobile_number ? (
-                      <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/15 px-2 py-0.5 rounded">
-                        LINKED
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-amber-400 font-mono font-bold bg-amber-500/15 px-2 py-0.5 rounded">
-                        NOT LINKED
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm font-semibold text-on-surface">
-                    {user.mobile_number || 'No mobile number added yet'}
-                  </p>
-                  <p className="text-[11px] text-on-surface-variant">
-                    {user.mobile_number
-                      ? 'Used for WhatsApp tournament verification & instant room password notifications.'
-                      : 'Add your mobile in profile to receive match credentials on WhatsApp.'}
-                  </p>
-                </div>
-
-                {/* Go to Profile Primary CTA Button */}
-                <div className="mt-5">
-                  <Link
-                    to="/profile"
-                    onClick={() => setProfileDrawerOpen(false)}
-                    className="w-full py-3 px-4 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/25 cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
-                    <span>Go to Profile</span>
-                  </Link>
-                </div>
-
-                {/* Quick Navigation Links */}
-                <div className="mt-5 space-y-1 border-t border-outline-variant/20 pt-4">
-                  <Link
-                    to={getDashboardPath()}
-                    onClick={() => setProfileDrawerOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-container-high text-sm font-medium text-on-surface transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-primary text-[20px]">dashboard</span>
-                    <span>Command Desk ({user.role.replace('_', ' ')})</span>
-                  </Link>
-
-                  <Link
-                    to="/room"
-                    onClick={() => setProfileDrawerOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-container-high text-sm font-medium text-on-surface transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-emerald-400 text-[20px]">sports_esports</span>
-                    <span>Tournament Room & Arena</span>
-                  </Link>
-
-                  <Link
-                    to="/tournaments"
-                    onClick={() => setProfileDrawerOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-container-high text-sm font-medium text-on-surface transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-tertiary text-[20px]">trophy</span>
-                    <span>Browse Tournaments</span>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Drawer Bottom: Sign Out */}
-              <div className="pt-4 border-t border-outline-variant/30 mt-6">
-                <button
-                  onClick={() => {
-                    setProfileDrawerOpen(false);
-                    logout();
-                    navigate('/login');
-                  }}
-                  className="w-full py-2.5 px-4 rounded-xl bg-error/15 hover:bg-error/25 text-error font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-error/30 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px]">logout</span>
-                  <span>Sign Out</span>
-                </button>
-              </div>
-
-            </div>
-          </div>
         </div>
       )}
     </header>
