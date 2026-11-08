@@ -14,6 +14,7 @@ import TeamLeaderPage from './pages/TeamLeaderPage.jsx';
 import MatchMasterDashboardPage from './pages/MatchMasterDashboardPage.jsx';
 import ScoreMasterDashboardPage from './pages/ScoreMasterDashboardPage.jsx';
 import SuperAdminDashboardPage from './pages/SuperAdminDashboardPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
 
 function NotFound() {
   return (
@@ -108,6 +109,16 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                 <SuperAdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Profile & Mobile Management */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

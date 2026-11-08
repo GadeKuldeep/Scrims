@@ -183,12 +183,32 @@ export const authController = {
   // Update Profile (Disallows changing role!)
   updateProfile: async (req, res, next) => {
     try {
-      const { full_name, mobile_number, in_game_id, avatar_url } = req.body;
+      const { full_name, mobile_number, in_game_id, avatar_url, current_password, new_password } = req.body;
+      const user = await db.profiles.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ success: false, error: 'User not found.' });
+      }
+
       const updates = {};
-      if (full_name) updates.full_name = full_name;
-      if (mobile_number) updates.mobile_number = mobile_number;
-      if (in_game_id !== undefined) updates.in_game_id = in_game_id;
-      if (avatar_url) updates.avatar_url = avatar_url;
+      if (full_name) updates.full_name = full_name.trim();
+      if (mobile_number !== undefined) updates.mobile_number = mobile_number.trim();
+      if (in_game_id !== undefined) updates.in_game_id = in_game_id.trim();
+      if (avatar_url !== undefined) updates.avatar_url = avatar_url.trim();
+
+      // Handle password change if requested
+      if (new_password) {
+        if (!current_password) {
+          return res.status(400).json({ success: false, error: 'Current password is required to change password.' });
+        }
+        const isMatch = await bcrypt.compare(current_password, user.password_hash);
+        if (!isMatch) {
+          return res.status(400).json({ success: false, error: 'Current password does not match.' });
+        }
+        if (new_password.length < 6) {
+          return res.status(400).json({ success: false, error: 'New password must be at least 6 characters.' });
+        }
+        updates.password_hash = await bcrypt.hash(new_password, 10);
+      }
 
       const updated = await db.profiles.update(req.user.id, updates);
       res.json({

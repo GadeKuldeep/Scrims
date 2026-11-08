@@ -78,8 +78,11 @@ export function AuthProvider({ children }) {
   };
 
   const updateUserProfile = (updatedUser) => {
-    setUser(prev => ({ ...prev, ...updatedUser }));
-    localStorage.setItem('scrims_user', JSON.stringify({ ...user, ...updatedUser }));
+    setUser(prev => {
+      const merged = { ...prev, ...updatedUser };
+      localStorage.setItem('scrims_user', JSON.stringify(merged));
+      return merged;
+    });
   };
 
   return (
